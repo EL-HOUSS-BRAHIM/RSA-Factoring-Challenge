@@ -1,4 +1,7 @@
+#!/usr/bin/env python3
+
 import sys
+import math
 
 def factorize_number(n):
     for i in range(2, n):
