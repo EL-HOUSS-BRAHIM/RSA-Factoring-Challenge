@@ -1,24 +1,41 @@
 #!/usr/bin/env python3
-
-import math
+import sympy
 import sys
+import random
 
-def factorize_number(n):
-    factors = []
-    for i in range(2, int(math.sqrt(n)) + 1):
-        while n % i == 0:
-            factors.append(i)
-            n //= i
-    if n > 1:
-        factors.append(n)
-    return factors
+def pollard_rho(n):
+    if n % 2 == 0:
+        return 2
 
-def main(file_path):
+    x = random.randint(1, n-1)
+    y = x
+    c = random.randint(1, n-1)
+    d = 1
+
+    f = lambda x: (x**2 + c) % n
+
+    while d == 1:
+        x = f(x)
+        y = f(f(y))
+        d = sympy.gcd(abs(x-y), n)
+
+    return d
+
+def factorize(file_path):
     with open(file_path, 'r') as file:
-        for line in file:
-            n = int(line.strip())
-            factors = factorize_number(n)
-            print(f'{n}={factors[0]}*{factors[1]}')
+        numbers = file.read().splitlines()
+
+    for num in numbers:
+        n = int(num)
+        factors = []
+
+        while n > 1:
+            factor = pollard_rho(n)
+            factors.append(factor)
+            n //= factor
+
+        factors_str = '*'.join(map(str, factors))
+        print(f"{num}={factors_str}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -26,4 +43,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     file_path = sys.argv[1]
-    main(file_path)
+    factorize(file_path)
