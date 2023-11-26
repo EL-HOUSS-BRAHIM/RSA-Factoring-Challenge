@@ -1,13 +1,27 @@
 #!/usr/bin/env python3
 
-
 import sympy
 import sys
 import random
+import math
 
-def ecm_factorization(n):
-    factors = sympy.ecm.factor(n, B1=100, sigma=1)
-    return factors
+def pollard_rho(n):
+    if n % 2 == 0:
+        return 2
+
+    x = random.randint(1, n-1)
+    y = x
+    c = random.randint(1, n-1)
+    d = 1
+
+    f = lambda x: (x**2 + c) % n
+
+    while d == 1:
+        x = f(x)
+        y = f(f(y))
+        d = sympy.gcd(abs(x-y), n)
+
+    return d
 
 def trial_division(n):
     i = 2
@@ -18,6 +32,10 @@ def trial_division(n):
             n //= i
             return i
     return n
+
+def quadratic_sieve(n):
+    factors = sympy.factorint(n)
+    return list(factors.keys())
 
 def factorize(file_path):
     with open(file_path, 'r') as file:
@@ -33,9 +51,15 @@ def factorize(file_path):
             factors.append(factor)
             n //= factor
 
-        # Use ECM for larger factors
+        # Use Pollard's rho for larger factors
+        while n > 1 and n < 100000000:
+            factor = pollard_rho(n)
+            factors.append(factor)
+            n //= factor
+
+        # Use Quadratic Sieve for even larger factors
         if n > 1:
-            factors.extend(ecm_factorization(n))
+            factors.extend(quadratic_sieve(n))
 
         factors_str = '*'.join(map(str, factors))
         print(f"{num}={factors_str}")
