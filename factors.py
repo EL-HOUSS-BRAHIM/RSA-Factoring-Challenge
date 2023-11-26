@@ -1,47 +1,38 @@
 #!/usr/bin/env python3
 
-import sys
+import math
 
-def pollard_rho(n):
+def pollards_rho(n):
     if n % 2 == 0:
         return 2
-    if n % 3 == 0:
-        return 3
-
-    x = 2
-    y = 2
-    d = 1
-
+    x = 2; y = 2; d = 1
+    f = lambda x: (x**2 + 1) % n
     while d == 1:
-        x = (x * x + 1) % n
-        y = (y * y + 1) % n
-        y = (y * y + 1) % n
-        d = gcd(abs(x - y), n)
-
+        x = f(x)
+        y = f(f(y))
+        d = math.gcd(abs(x-y), n)
     return d
 
 def factorize(n):
-    if n == 1:
-        return []
-
     factors = []
     while n > 1:
-        p = pollard_rho(n)
-        factors.append(p)
-        n //= p
-
+        d = pollards_rho(n)
+        factors.append(d)
+        n //= d
     return factors
 
 def main():
+    import sys
     if len(sys.argv) != 2:
-        print("Usage: factors <file>")
-        sys.exit(1)
-
-    with open(sys.argv[1]) as f:
+        print(f"Usage: {sys.argv[0]} <file>")
+        return
+    with open(sys.argv[1], 'r') as f:
         for line in f:
             n = int(line)
             factors = factorize(n)
-            print(f"{n} = {' * '.join(map(str, factors))}")
+            for p in factors:
+                print(f"{n}={p}*{n//p}")
+                n //= p
 
 if __name__ == "__main__":
     main()
