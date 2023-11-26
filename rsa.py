@@ -3,31 +3,51 @@
 import sys
 import math
 
-def factorize_rsa_number(n):
-    for i in range(2, int(math.sqrt(n)) + 1):
-        if n % i == 0:
-            return i, n // i
-    return n, 1
+from factors import factorize_number
 
-def factorize_rsa_file(file_path):
-    with open(file_path, 'r') as file:
-        numbers = file.read().splitlines()
+def rsa_factorize_number(n):
+    """
+    Factorize an RSA number into a product of two prime numbers.
 
-    factorizations = []
-    for number in numbers:
-        n = int(number)
-        factors = factorize_rsa_number(n)
-        factorizations.append(f"{n}={factors[0]}*{factors[1]}")
+    :param n: The RSA number to factorize.
+    :return: A tuple (p, q) where p * q = n, and p and q are prime.
+    """
+    p, q = factorize_number(n)
+    while not (is_prime(p) and is_prime(q)):
+        p, q = factorize_number(n)
+    return p, q
 
-    return factorizations
+def is_prime(num):
+    """
+    Check if a number is prime.
+
+    :param num: The number to check.
+    :return: True if the number is prime, False otherwise.
+    """
+    if num < 2:
+        return False
+    for i in range(2, int(num**0.5) + 1):
+        if num % i == 0:
+            return False
+    return True
+
+def rsa_factorize_file(input_file):
+    """
+    Factorize RSA numbers from a file and print the factorization.
+
+    :param input_file: The file containing RSA numbers to factor.
+    """
+    with open(input_file, 'r') as file:
+        for line in file:
+            rsa_number = int(line.strip())
+            p, q = rsa_factorize_number(rsa_number)
+            print(f"{rsa_number}={p}*{q}")
 
 if __name__ == "__main__":
+    import sys
     if len(sys.argv) != 2:
         print("Usage: rsa <file>")
         sys.exit(1)
 
-    file_path = sys.argv[1]
-    factorizations = factorize_rsa_file(file_path)
-
-    for factorization in factorizations:
-        print(factorization)
+    input_file = sys.argv[1]
+    rsa_factorize_file(input_file)
